@@ -1,10 +1,20 @@
 mod data;
+mod interface;
+mod rendering;
 
 use clap::{App, Arg};
-use data::AllData;
+pub use data::{AllData, Params};
 use libflate::gzip::Decoder;
+pub use rendering::create_surface;
 use std::fs::File;
 use std::io::Read;
+use std::rc::Rc;
+
+use gio::prelude::*;
+use gio::ApplicationFlags;
+use gtk::Application;
+
+use interface::build_ui;
 
 #[macro_use]
 extern crate serde_derive;
@@ -38,8 +48,11 @@ fn main() {
 
     let data: AllData = bincode::deserialize(&data[..]).expect("couldn't deserialize the data");
 
-    println!(
-        "{}, {}",
-        data.params.output.width, data.params.output.height
-    );
+    let app = Application::new(None, ApplicationFlags::FLAGS_NONE)
+        .expect("Couldn't create a GTK application!");
+
+    let data = Rc::new(data);
+    app.connect_activate(move |app| build_ui(app, data.clone()));
+
+    app.run(&[]);
 }
