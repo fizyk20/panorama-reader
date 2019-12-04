@@ -64,12 +64,22 @@ fn create_drawing_area(data: Rc<AllData>, labels: Labels) -> gtk::DrawingArea {
         let y = y as usize;
 
         if let Some(pixel) = data2.result[y][x] {
-            let elevation = format!("Elevation: {:.1} m", pixel.elevation);
-            let distance = if pixel.distance > 1000.0 {
-                format!("Distance: {:.1} km", pixel.distance / 1000.0)
+            let elevation = format!(
+                "Elevation: {:.1} m ({:.0} ft)",
+                pixel.elevation,
+                pixel.elevation / 0.304
+            );
+            let si_distance = if pixel.distance > 1000.0 {
+                format!("{:.1} km", pixel.distance / 1000.0)
             } else {
-                format!("Distance: {:.1} m", pixel.distance)
+                format!("{:.1} m", pixel.distance)
             };
+            let imperial_distance = if pixel.distance > 805.0 {
+                format!("{:.1} mi", pixel.distance / 1609.0)
+            } else {
+                format!("{:.1} yds", pixel.distance / 0.912)
+            };
+            let distance = format!("Distance: {} ({})", si_distance, imperial_distance);
             let lat = as_dms(pixel.lat);
             let lon = as_dms(pixel.lon);
 
