@@ -3,6 +3,8 @@ use gdk;
 use glib;
 use gtk::prelude::*;
 use gtk::{self, Application, ApplicationWindow};
+use std::cell::RefCell;
+use std::f64::consts::PI;
 use std::rc::Rc;
 
 struct Labels {
@@ -20,21 +22,44 @@ fn as_dms(ang: f64) -> (usize, usize, usize) {
     (deg, min, sec)
 }
 
+const CROSSHAIR_RADIUS: f64 = 12.0;
+const CROSSHAIR_LINE_LEN: f64 = 20.0;
+
 fn create_drawing_area(data: Rc<AllData>, labels: Labels) -> gtk::DrawingArea {
     let drawing_area = gtk::DrawingArea::new();
     drawing_area.set_events(gdk::EventMask::BUTTON_PRESS_MASK);
 
     let img_surface = create_surface(&data);
 
+    let chosen_pixel: Rc<RefCell<Option<(f64, f64)>>> = Rc::new(RefCell::new(None));
+
+    let chosen_pixel2 = chosen_pixel.clone();
     drawing_area.connect_draw(move |_area, cr| {
         cr.set_source_surface(&img_surface, 0.0, 0.0);
         cr.paint();
+
+        if let Some((x, y)) = *chosen_pixel2.borrow() {
+            cr.set_source_rgb(1.0, 1.0, 1.0);
+            cr.set_line_width(1.0);
+            cr.arc(x, y, CROSSHAIR_RADIUS, 0.0, 2.0 * PI);
+            cr.stroke();
+
+            cr.move_to(x, y - CROSSHAIR_LINE_LEN);
+            cr.line_to(x, y + CROSSHAIR_LINE_LEN);
+            cr.stroke();
+            cr.move_to(x - CROSSHAIR_LINE_LEN, y);
+            cr.line_to(x + CROSSHAIR_LINE_LEN, y);
+            cr.stroke();
+        }
         glib::signal::Inhibit(true)
     });
 
     let data2 = data.clone();
-    drawing_area.connect_button_press_event(move |_area, ev_button| {
+    let chosen_pixel3 = chosen_pixel.clone();
+    drawing_area.connect_button_press_event(move |area, ev_button| {
         let (x, y) = ev_button.get_position();
+        *chosen_pixel3.borrow_mut() = Some((x, y));
+        area.queue_draw();
         let x = x as usize;
         let y = y as usize;
 
