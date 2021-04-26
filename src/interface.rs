@@ -12,6 +12,8 @@ struct Labels {
     distance_label: gtk::Label,
     latitude_label: gtk::Label,
     longitude_label: gtk::Label,
+    dir_elev_label: gtk::Label,
+    dir_azim_label: gtk::Label,
 }
 
 fn as_dms(ang: f64) -> (usize, usize, usize) {
@@ -62,6 +64,13 @@ fn create_drawing_area(data: Rc<AllData>, labels: Labels) -> gtk::DrawingArea {
         area.queue_draw();
         let x = x as usize;
         let y = y as usize;
+
+        // set direction data
+        let (azim, elev) = data2.params.get_azim_and_elev(x, y);
+        let dir_elevation = format!("Elevation: {:.3} deg", elev);
+        let dir_azimuth = format!("Azimuth: {:.3} deg", azim);
+        labels.dir_elev_label.set_label(&dir_elevation);
+        labels.dir_azim_label.set_label(&dir_azimuth);
 
         if let Some(pixel) = data2.result[y][x] {
             let elevation = format!(
@@ -132,16 +141,25 @@ fn create_layout(data: Rc<AllData>) -> gtk::Box {
     let dist_label = gtk::Label::new(Some("Distance: none"));
     let lat_label = gtk::Label::new(Some("Latitude: none"));
     let lon_label = gtk::Label::new(Some("Longitude: none"));
+
     elev_label.set_xalign(0.0);
     dist_label.set_xalign(0.0);
     lat_label.set_xalign(0.0);
     lon_label.set_xalign(0.0);
+
+    let dir_elev_label = gtk::Label::new(Some("Elevation: none"));
+    let dir_azim_label = gtk::Label::new(Some("Azimuth: none"));
+
+    dir_elev_label.set_xalign(0.0);
+    dir_azim_label.set_xalign(0.0);
 
     let labels = Labels {
         elevation_label: elev_label.clone(),
         distance_label: dist_label.clone(),
         latitude_label: lat_label.clone(),
         longitude_label: lon_label.clone(),
+        dir_elev_label: dir_elev_label.clone(),
+        dir_azim_label: dir_azim_label.clone(),
     };
 
     let drawing_area = create_drawing_area(data, labels);
@@ -158,13 +176,20 @@ fn create_layout(data: Rc<AllData>) -> gtk::Box {
     let data_box = gtk::Box::new(gtk::Orientation::Vertical, 10);
     data_box.set_margin_top(20);
 
+    let direction_box = gtk::Box::new(gtk::Orientation::Vertical, 10);
+    direction_box.set_margin_top(10);
+
     data_box.add(&elev_label);
     data_box.add(&dist_label);
     data_box.add(&lat_label);
     data_box.add(&lon_label);
 
+    direction_box.add(&dir_elev_label);
+    direction_box.add(&dir_azim_label);
+
     side_box.add(&box_label);
     side_box.add(&data_box);
+    side_box.add(&direction_box);
 
     main_box.add(&side_box);
 
