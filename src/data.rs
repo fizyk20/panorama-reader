@@ -15,6 +15,25 @@ pub struct Position {
 }
 
 #[derive(Clone, Copy, Serialize, Deserialize)]
+pub enum Shape {
+    Cylinder { radius: f64, height: f64 },
+}
+
+#[derive(Clone, Copy, Serialize, Deserialize)]
+pub struct Object {
+    pub position: Position,
+    pub shape: Shape,
+    pub color: Color,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Scene {
+    pub terrain_folder: String,
+    #[serde(default)]
+    pub objects: Vec<Object>,
+}
+
+#[derive(Clone, Copy, Serialize, Deserialize)]
 pub struct Frame {
     pub direction: f64,
     pub tilt: f64,
@@ -74,13 +93,15 @@ pub struct Output {
     pub file_metadata: Option<String>,
     pub width: u16,
     pub height: u16,
+    #[serde(default)]
     pub ticks: Vec<Tick>,
+    #[serde(default)]
     pub show_eye_level: bool,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Params {
-    pub terrain_folder: String,
+    pub scene: Scene,
     pub view: View,
     pub env: Environment,
     pub straight_rays: bool,
@@ -108,6 +129,19 @@ impl Params {
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub struct Color {
+    pub r: f64,
+    pub g: f64,
+    pub b: f64,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub enum PixelColor {
+    Terrain,
+    Rgb(Color),
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct ResultPixel {
     pub lat: f64,
     pub lon: f64,
@@ -115,6 +149,7 @@ pub struct ResultPixel {
     pub elevation: f64,
     pub path_length: f64,
     pub normal: Vector3<f64>,
+    pub color: PixelColor,
 }
 
 #[derive(Clone, Serialize, Deserialize)]

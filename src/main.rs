@@ -3,7 +3,7 @@ mod interface;
 mod rendering;
 
 use clap::{App, Arg};
-pub use data::{AllData, Params};
+pub use data::{AllData, Params, PixelColor};
 use libflate::gzip::Decoder;
 pub use rendering::create_surface;
 use std::fs::File;

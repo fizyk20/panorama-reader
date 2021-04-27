@@ -1,4 +1,4 @@
-use crate::{AllData, Params};
+use crate::{AllData, Params, PixelColor};
 use cairo::{Format, ImageSurface};
 
 #[allow(clippy::many_single_char_names)]
@@ -70,7 +70,16 @@ pub fn create_surface(data: &AllData) -> ImageSurface {
             for x in 0..width {
                 let result = data.result[y][x];
                 let color = if let Some(result) = result {
-                    color_from_elev_dist(&data.params, result.elevation, result.distance)
+                    match result.color {
+                        PixelColor::Terrain => {
+                            color_from_elev_dist(&data.params, result.elevation, result.distance)
+                        }
+                        PixelColor::Rgb(color) => (
+                            (color.r * 255.0) as u8,
+                            (color.g * 255.0) as u8,
+                            (color.b * 255.0) as u8,
+                        ),
+                    }
                 } else {
                     (28, 28, 28)
                 };
