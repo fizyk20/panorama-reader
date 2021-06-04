@@ -72,7 +72,7 @@ fn create_drawing_area(data: Rc<AllData>, labels: Labels) -> gtk::DrawingArea {
         labels.dir_elev_label.set_label(&dir_elevation);
         labels.dir_azim_label.set_label(&dir_azimuth);
 
-        if let Some(pixel) = data2.result[y][x] {
+        if let Some(pixel) = data2.result[y][x].get(0) {
             let elevation = format!(
                 "Elevation: {:.1} m ({:.0} ft)",
                 pixel.elevation,

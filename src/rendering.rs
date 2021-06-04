@@ -68,8 +68,8 @@ pub fn create_surface(data: &AllData) -> ImageSurface {
 
         for y in 0..height {
             for x in 0..width {
-                let result = data.result[y][x];
-                let color = if let Some(result) = result {
+                let result = &data.result[y][x];
+                let color = if let Some(result) = result.get(0) {
                     match result.color {
                         PixelColor::Terrain => {
                             color_from_elev_dist(&data.params, result.elevation, result.distance)

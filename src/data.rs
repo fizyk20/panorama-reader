@@ -1,4 +1,5 @@
 use atm_refraction::Environment;
+use image::DynamicImage;
 use nalgebra::Vector3;
 
 #[derive(Clone, Copy, Serialize, Deserialize)]
@@ -14,14 +15,41 @@ pub struct Position {
     pub altitude: Altitude,
 }
 
-#[derive(Clone, Copy, Serialize, Deserialize)]
-pub enum Shape {
-    Cylinder { radius: f64, height: f64 },
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Image {
+    #[serde(skip)]
+    #[serde(default = "default_image")]
+    image: DynamicImage,
+    path: String,
 }
 
-#[derive(Clone, Copy, Serialize, Deserialize)]
+fn default_image() -> DynamicImage {
+    DynamicImage::new_rgba8(0, 0)
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+pub enum Shape {
+    Cylinder {
+        radius: f64,
+        height: f64,
+    },
+    Billboard {
+        width: f64,
+        height: f64,
+        texture: Image,
+    },
+}
+
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+pub struct Coords {
+    pub lat: f64,
+    pub lon: f64,
+    pub elev: f64,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Object {
-    pub position: Position,
+    pub position: Coords,
     pub shape: Shape,
     pub color: Color,
 }
@@ -133,6 +161,12 @@ pub struct Color {
     pub r: f64,
     pub g: f64,
     pub b: f64,
+    #[serde(default = "default_alpha")]
+    pub a: f64,
+}
+
+fn default_alpha() -> f64 {
+    1.0
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
@@ -155,5 +189,5 @@ pub struct ResultPixel {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct AllData {
     pub params: Params,
-    pub result: Vec<Vec<Option<ResultPixel>>>,
+    pub result: Vec<Vec<Vec<ResultPixel>>>,
 }
